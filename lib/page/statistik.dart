@@ -55,7 +55,7 @@ class _StatistikPageState extends State<StatistikPage>
 
     // Initialize animations
     _animationController = AnimationController(
-      vsync: this,
+      vsync: this, 
       duration: const Duration(milliseconds: 1000),
     );
 
@@ -241,162 +241,162 @@ class _StatistikPageState extends State<StatistikPage>
 
                 const SizedBox(height: 20),
 
-                // Chart Card
-                _buildGlassCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.show_chart,
-                            color: primaryColor,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            "Grafik Perkembangan",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: primaryColor,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 200,
-                        child: LineChart(
-                          LineChartData(
-                            gridData: FlGridData(
-                              show: true,
-                              getDrawingHorizontalLine: (value) {
-                                return FlLine(
-                                  color: Colors.grey.withOpacity(0.3),
-                                  strokeWidth: 1,
-                                );
-                              },
-                              getDrawingVerticalLine: (value) {
-                                return FlLine(
-                                  color: Colors.grey.withOpacity(0.3),
-                                  strokeWidth: 1,
-                                );
-                              },
-                            ),
-                            titlesData: FlTitlesData(
-                              show: true,
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 22,
-                                  getTitlesWidget: (value, meta) {
-                                    if (value.toInt() % 2 == 0 &&
-                                        value.toInt() >= 0 &&
-                                        value.toInt() < dateHistory.length) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(top: 5),
-                                        child: Text(
-                                          dateHistory[value.toInt()],
-                                          style: const TextStyle(
-                                            color: Color(0xFF2E7D32),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  },
-                                ),
-                              ),
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 28,
-                                  getTitlesWidget: (value, meta) {
-                                    return Text(
-                                      value.toInt().toString(),
-                                      style: const TextStyle(
-                                        color: Color(0xFF2E7D32),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              topTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              rightTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                            ),
-                            borderData: FlBorderData(
-                              show: true,
-                              border: Border.all(
-                                color: Colors.grey.withOpacity(0.5),
-                                width: 1,
-                              ),
-                            ),
-                            minX: 0,
-                            maxX: weightHistory.length.toDouble() - 1,
-                            minY:
-                                (weightHistory.reduce(min) - 5).clamp(30, 150),
-                            maxY:
-                                (weightHistory.reduce(max) + 5).clamp(30, 150),
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots: weightHistory
-                                    .asMap()
-                                    .entries
-                                    .map((e) =>
-                                        FlSpot(e.key.toDouble(), e.value))
-                                    .toList(),
-                                isCurved: true,
-                                color: primaryColor,
-                                barWidth: 3,
-                                isStrokeCapRound: true,
-                                dotData: FlDotData(
-                                  show: true,
-                                  getDotPainter:
-                                      (spot, percent, barData, index) {
-                                    return FlDotCirclePainter(
-                                      radius: 4,
-                                      color: primaryColor,
-                                      strokeWidth: 2,
-                                      strokeColor: Colors.white,
-                                    );
-                                  },
-                                ),
-                                belowBarData: BarAreaData(
-                                  show: true,
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      primaryColor.withOpacity(0.3),
-                                      primaryColor.withOpacity(0.0),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // // Chart Card
+                // _buildGlassCard(
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       Row(
+                //         mainAxisAlignment: MainAxisAlignment.center,
+                //         children: [
+                //           const Icon(
+                //             Icons.show_chart,
+                //             color: primaryColor,
+                //             size: 24,
+                //           ),
+                //           const SizedBox(width: 10),
+                //           Text(
+                //             "Grafik Perkembangan",
+                //             style: TextStyle(
+                //               fontSize: 18,
+                //               fontWeight: FontWeight.bold,
+                //               color: primaryColor,
+                //               shadows: [
+                //                 Shadow(
+                //                   color: Colors.black.withOpacity(0.1),
+                //                   offset: const Offset(0, 1),
+                //                   blurRadius: 2,
+                //                 ),
+                //               ],
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //       const SizedBox(height: 16),
+                //       SizedBox(
+                //         height: 200,
+                //         child: LineChart(
+                //           LineChartData(
+                //             gridData: FlGridData(
+                //               show: true,
+                //               getDrawingHorizontalLine: (value) {
+                //                 return FlLine(
+                //                   color: Colors.grey.withOpacity(0.3),
+                //                   strokeWidth: 1,
+                //                 );
+                //               },
+                //               getDrawingVerticalLine: (value) {
+                //                 return FlLine(
+                //                   color: Colors.grey.withOpacity(0.3),
+                //                   strokeWidth: 1,
+                //                 );
+                //               },
+                //             ),
+                //             titlesData: FlTitlesData(
+                //               show: true,
+                //               bottomTitles: AxisTitles(
+                //                 sideTitles: SideTitles(
+                //                   showTitles: true,
+                //                   reservedSize: 22,
+                //                   getTitlesWidget: (value, meta) {
+                //                     if (value.toInt() % 2 == 0 &&
+                //                         value.toInt() >= 0 &&
+                //                         value.toInt() < dateHistory.length) {
+                //                       return Padding(
+                //                         padding: const EdgeInsets.only(top: 5),
+                //                         child: Text(
+                //                           dateHistory[value.toInt()],
+                //                           style: const TextStyle(
+                //                             color: Color(0xFF2E7D32),
+                //                             fontWeight: FontWeight.bold,
+                //                             fontSize: 10,
+                //                           ),
+                //                         ),
+                //                       );
+                //                     }
+                //                     return const SizedBox.shrink();
+                //                   },
+                //                 ),
+                //               ),
+                //               leftTitles: AxisTitles(
+                //                 sideTitles: SideTitles(
+                //                   showTitles: true,
+                //                   reservedSize: 28,
+                //                   getTitlesWidget: (value, meta) {
+                //                     return Text(
+                //                       value.toInt().toString(),
+                //                       style: const TextStyle(
+                //                         color: Color(0xFF2E7D32),
+                //                         fontWeight: FontWeight.bold,
+                //                         fontSize: 12,
+                //                       ),
+                //                     );
+                //                   },
+                //                 ),
+                //               ),
+                //               topTitles: AxisTitles(
+                //                 sideTitles: SideTitles(showTitles: false),
+                //               ),
+                //               rightTitles: AxisTitles(
+                //                 sideTitles: SideTitles(showTitles: false),
+                //               ),
+                //             ),
+                //             borderData: FlBorderData(
+                //               show: true,
+                //               border: Border.all(
+                //                 color: Colors.grey.withOpacity(0.5),
+                //                 width: 1,
+                //               ),
+                //             ),
+                //             minX: 0,
+                //             maxX: weightHistory.length.toDouble() - 1,
+                //             minY:
+                //                 (weightHistory.reduce(min) - 5).clamp(30, 150),
+                //             maxY:
+                //                 (weightHistory.reduce(max) + 5).clamp(30, 150),
+                //             lineBarsData: [
+                //               LineChartBarData(
+                //                 spots: weightHistory
+                //                     .asMap()
+                //                     .entries
+                //                     .map((e) =>
+                //                         FlSpot(e.key.toDouble(), e.value))
+                //                     .toList(),
+                //                 isCurved: true,
+                //                 color: primaryColor,
+                //                 barWidth: 3,
+                //                 isStrokeCapRound: true,
+                //                 dotData: FlDotData(
+                //                   show: true,
+                //                   getDotPainter:
+                //                       (spot, percent, barData, index) {
+                //                     return FlDotCirclePainter(
+                //                       radius: 4,
+                //                       color: primaryColor,
+                //                       strokeWidth: 2,
+                //                       strokeColor: Colors.white,
+                //                     );
+                //                   },
+                //                 ),
+                //                 belowBarData: BarAreaData(
+                //                   show: true,
+                //                   gradient: LinearGradient(
+                //                     begin: Alignment.topCenter,
+                //                     end: Alignment.bottomCenter,
+                //                     colors: [
+                //                       primaryColor.withOpacity(0.3),
+                //                       primaryColor.withOpacity(0.0),
+                //                     ],
+                //                   ),
+                //                 ),
+                //               )
+                //             ],
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
 
                 const SizedBox(height: 20),
 

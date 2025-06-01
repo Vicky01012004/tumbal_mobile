@@ -138,8 +138,8 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
     };
 
     try {
-      print('🚀 Mengirim request ke: $url');
-      print('📊 Data yang dikirim: $data');
+      print(' Mengirim request ke: $url');
+      print(' Data yang dikirim: $data');
 
       final response = await http
           .post(
@@ -152,8 +152,8 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
           )
           .timeout(Duration(seconds: 15));
 
-      print('📱 Response status: ${response.statusCode}');
-      print('📄 Response body: ${response.body}');
+      print(' Response status: ${response.statusCode}');
+      print(' Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
@@ -176,7 +176,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
         prediction = 'Gagal terhubung ke server: $e';
         isLoading = false;
       });
-      print('❌ Error detail: $e');
+      print(' Error detail: $e');
     }
   }
 

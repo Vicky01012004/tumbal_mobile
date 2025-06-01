@@ -1,12 +1,17 @@
 // ===== MAIN PAGE WITH NAVIGATION (FIXED) =====
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:obecity_projectsem4/page/beranda_ui.dart';
 import 'package:obecity_projectsem4/page/setting.dart';
 import 'package:obecity_projectsem4/page/Rekomendasipage.dart';
+import 'package:obecity_projectsem4/utils/request-url.dart';
 import 'dart:math';
 import 'package:obecity_projectsem4/wigdets/custom_button.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BerandaUI extends StatefulWidget {
   const BerandaUI({super.key});
@@ -17,14 +22,13 @@ class BerandaUI extends StatefulWidget {
 
 class _BerandaUIState extends State<BerandaUI>
     with SingleTickerProviderStateMixin {
-  
   // ===== DATA VARIABLES (PERLU BACKEND INTEGRATION) =====
   double currentWeight = 60;
-  double currentHeight = 170; 
-  List<WeightEntry> weightHistory = [];
+  double currentHeight = 170;
+  List<ChartWeight> weightHistory = [];
   String bmiCategory = "Normal";
   String inputDate = "";
-  
+
   // Animation controllers
   late AnimationController _animationController;
   late Animation<double> _fadeInAnimation;
@@ -68,19 +72,30 @@ class _BerandaUIState extends State<BerandaUI>
   }
 
   // ===== BACKEND INTEGRATION METHODS =====
-  
+
   Future<void> _loadUserData() async {
-    // TODO: Implementasi load data user dari backend
-    setState(() {
-      // Temporary data - hapus setelah backend ready
-      weightHistory = [
-        WeightEntry(weight: 65, date: DateTime.now().subtract(Duration(days: 8))),
-        WeightEntry(weight: 63, date: DateTime.now().subtract(Duration(days: 7))),
-        WeightEntry(weight: 61, date: DateTime.now().subtract(Duration(days: 6))),
-        WeightEntry(weight: 59, date: DateTime.now().subtract(Duration(days: 5))),
-        WeightEntry(weight: 60, date: DateTime.now().subtract(Duration(days: 4))),
-      ];
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var token = prefs.getString("token");
+    var url = Uri.parse("$baseUrl/auth/chart");
+    var response = await http.get(url, headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer $token"
     });
+    print(token);
+    print(response.body);
+    if (response.statusCode == 200) {
+      List body = json.decode(response.body)['data'];
+      setState(() {
+        weightHistory = body.map((val) => ChartWeight.fromJson(val)).toList();
+      });
+    } else {
+      Get.showSnackbar(const GetSnackBar(
+        duration: Duration(seconds: 3),
+        title: "Error",
+        message: "Oopppss ada kesalahan.. ",
+        backgroundColor: Colors.red,
+      ));
+    }
   }
 
   Future<void> _saveWeightData() async {
@@ -88,16 +103,14 @@ class _BerandaUIState extends State<BerandaUI>
     try {
       // API call untuk save berat badan
       // await WeightService.saveWeight(currentWeight, DateTime.now());
-      
+
       // Update local state setelah berhasil save
-      setState(() {
-        weightHistory.add(WeightEntry(
-          weight: currentWeight, 
-          date: DateTime.now()
-        ));
-        inputDate = "${DateTime.now().day}.${DateTime.now().month}";
-      });
-      
+      // setState(() {
+      //   weightHistory
+      //       .add(WeightEntry(weight: currentWeight, date: DateTime.now()));
+      //   inputDate = "${DateTime.now().day}.${DateTime.now().month}";
+      // });
+
       _showSuccessMessage("Berat badan berhasil disimpan!");
     } catch (e) {
       _showErrorMessage("Gagal menyimpan data: ${e.toString()}");
@@ -108,7 +121,7 @@ class _BerandaUIState extends State<BerandaUI>
     if (currentHeight > 0) {
       double heightInMeters = currentHeight / 100;
       double bmi = currentWeight / pow(heightInMeters, 2);
-      
+
       String category;
       if (bmi < 18.5) {
         category = "Underweight";
@@ -150,175 +163,198 @@ class _BerandaUIState extends State<BerandaUI>
   Widget build(BuildContext context) {
     // PERBAIKAN: Gunakan Scaffold dengan body transparan untuk slider
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              backgroundColor1,
-              backgroundColor2,
-              backgroundColor3,
-            ],
-          ),
-        ),
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return Opacity(
-            opacity: _fadeInAnimation.value,
-            child: Transform.translate(
-              offset: Offset(0, _slideAnimation.value * 100),
-              child: child,
-            ),
-          );
-        },
-        child: SafeArea(
-          child: SingleChildScrollView(
-            // PERBAIKAN: Tambah padding bottom untuk memberi ruang footer
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-            child: Column(
-              children: [
-                // Header manual
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Text(
-                    "Input Berat Badan",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.1),
-                          offset: const Offset(0, 2),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                // Weight Input Card
-                _buildGlassCard(
-                  child: Column(
-                    children: [
-                      _buildCardHeader(
-                        icon: Icons.scale,
-                        title: 'Input Berat Badan Saat Ini',
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '${currentWeight.toStringAsFixed(1)} kg',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Slider(
-                        value: currentWeight,
-                        min: 30,
-                        max: 150,
-                        divisions: 240,
-                        label: currentWeight.toStringAsFixed(1),
-                        activeColor: primaryColor,
-                        inactiveColor: secondaryColor.withOpacity(0.5),
-                        onChanged: (value) {
-                          setState(() {
-                            currentWeight = value;
-                            _calculateBMI();
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      CustomButton(
-                        text: "Simpan",
-                        icon: Icons.save,
-                        onPressed: _saveWeightData,
-                        backgroundColor: primaryColor,
-                        height: 50,
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Chart Card
-                _buildGlassCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildCardHeader(
-                        icon: Icons.show_chart,
-                        title: "Grafik Perkembangan",
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 200,
-                        child: _buildWeightChart(),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Status Card
-                _buildGlassCard(
-                  child: Column(
-                    children: [
-                      _buildCardHeader(
-                        icon: Icons.info_outline,
-                        title: "Status Kesehatan",
-                      ),
-                      const SizedBox(height: 16),
-                      _buildStatusRow(
-                        icon: Icons.category,
-                        label: "BMI Status",
-                        value: bmiCategory,
-                        valueColor: _getBMICategoryColor(bmiCategory),
-                      ),
-                      _buildStatusRow(
-                        icon: Icons.calendar_today,
-                        label: "Tanggal Input",
-                        value: inputDate.isEmpty ? "Belum ada input" : inputDate,
-                      ),
-                      _buildStatusRow(
-                        icon: Icons.scale,
-                        label: "Berat Badan Saat Ini",
-                        value: "${currentWeight.toStringAsFixed(1)} kg",
-                      ),
-                      _buildStatusRow(
-                        icon: Icons.history,
-                        label: "Berat Badan Terakhir",
-                        value: weightHistory.isEmpty
-                            ? "Belum ada data"
-                            : "${weightHistory.last.weight.toStringAsFixed(1)} kg",
-                      ),
-                      const SizedBox(height: 12),
-                      _buildTipCard(),
-                    ],
-                  ),
-                ),
-                
-                // PERBAIKAN: Hapus SizedBox di akhir karena sudah ada padding bottom
+        backgroundColor: Colors.transparent,
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                backgroundColor1,
+                backgroundColor2,
+                backgroundColor3,
               ],
             ),
           ),
-        ),
-      ),
-     )
-    );
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeInAnimation.value,
+                child: Transform.translate(
+                  offset: Offset(0, _slideAnimation.value * 100),
+                  child: child,
+                ),
+              );
+            },
+            child: SafeArea(
+              child: SingleChildScrollView(
+                // PERBAIKAN: Tambah padding bottom untuk memberi ruang footer
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                child: Column(
+                  children: [
+                    // Header manual
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Text(
+                        "Input Berat Badan",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.1),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Weight Input Card
+                    _buildGlassCard(
+                      child: Column(
+                        children: [
+                          _buildCardHeader(
+                            icon: Icons.scale,
+                            title: 'Input Berat Badan Saat Ini',
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            '${currentWeight.toStringAsFixed(1)} kg',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Slider(
+                            value: currentWeight,
+                            min: 30,
+                            max: 150,
+                            divisions: 240,
+                            label: currentWeight.toStringAsFixed(1),
+                            activeColor: primaryColor,
+                            inactiveColor: secondaryColor.withOpacity(0.5),
+                            onChanged: (value) {
+                              setState(() {
+                                currentWeight = value;
+                                _calculateBMI();
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          CustomButton(
+                            text: "Simpan",
+                            icon: Icons.save,
+                            onPressed: _saveWeightData,
+                            backgroundColor: primaryColor,
+                            height: 50,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Chart Card
+                    _buildGlassCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.show_chart,
+                                color: primaryColor,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                "Grafik Perkembangan 10 Pemeriksaan Terakhir",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      offset: const Offset(0, 1),
+                                      blurRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 200,
+                            child: _buildWeightChart(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Status Card
+                    _buildGlassCard(
+                      child: Column(
+                        children: [
+                          _buildCardHeader(
+                            icon: Icons.info_outline,
+                            title: "Status Kesehatan",
+                          ),
+                          const SizedBox(height: 16),
+                          _buildStatusRow(
+                            icon: Icons.category,
+                            label: "BMI Status",
+                            value: bmiCategory,
+                            valueColor: _getBMICategoryColor(bmiCategory),
+                          ),
+                          _buildStatusRow(
+                            icon: Icons.calendar_today,
+                            label: "Tanggal Input",
+                            value: inputDate.isEmpty
+                                ? "Belum ada input"
+                                : inputDate,
+                          ),
+                          _buildStatusRow(
+                            icon: Icons.scale,
+                            label: "Berat Badan Saat Ini",
+                            value: "${currentWeight.toStringAsFixed(1)} kg",
+                          ),
+                          _buildStatusRow(
+                            icon: Icons.history,
+                            label: "Berat Badan Terakhir",
+                            value: weightHistory.isEmpty
+                                ? "Belum ada data"
+                                : "xx kg",
+                          ),
+                          const SizedBox(height: 12),
+                          _buildTipCard(),
+                        ],
+                      ),
+                    ),
+
+                    // PERBAIKAN: Hapus SizedBox di akhir karena sudah ada padding bottom
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ));
   }
 
   // ===== UI HELPER METHODS =====
-  
+
   Widget _buildGlassCard({required Widget child}) {
     return Container(
       decoration: BoxDecoration(
@@ -483,7 +519,8 @@ class _BerandaUIState extends State<BerandaUI>
               getTitlesWidget: (value, meta) {
                 if (value.toInt() < weightHistory.length) {
                   return Text(
-                    "${weightHistory[value.toInt()].date.day}/${weightHistory[value.toInt()].date.month}",
+                    // "${weightHistory[value.toInt()].date.day}/${weightHistory[value.toInt()].date.month}",
+                    "${weightHistory[value.toInt()].tanggal.month}/${weightHistory[value.toInt()].tanggal.year}",
                     style: const TextStyle(fontSize: 10),
                   );
                 }
@@ -523,16 +560,27 @@ class _BerandaUIState extends State<BerandaUI>
         ),
         minX: 0,
         maxX: (weightHistory.length - 1).toDouble(),
-        minY: weightHistory.isEmpty ? 40 : 
-              weightHistory.map((e) => e.weight).reduce((a, b) => a < b ? a : b) - 5,
-        maxY: weightHistory.isEmpty ? 100 : 
-              weightHistory.map((e) => e.weight).reduce((a, b) => a > b ? a : b) + 5,
+        minY: weightHistory.isEmpty
+            ? 40
+            : weightHistory
+                    .map((e) => e.newWeight)
+                    .reduce((a, b) => a < b ? a : b) -
+                5,
+        maxY: weightHistory.isEmpty
+            ? 40
+            : weightHistory
+                    .map((e) => e.newWeight)
+                    .reduce((a, b) => a < b ? a : b) +
+                5,
+        // lineBarsData: weightHistory.map((e)=>LineChartBarData()).toList(),
+        // [weightHistory.asMap().entries.map((e)=>LineChartBarData())]
         lineBarsData: [
           LineChartBarData(
             spots: weightHistory
                 .asMap()
                 .entries
-                .map((e) => FlSpot(e.key.toDouble(), e.value.weight))
+                .map((e) =>
+                    FlSpot(e.key.toDouble(), e.value.newWeight.toDouble()))
                 .toList(),
             isCurved: true,
             color: primaryColor,
@@ -588,32 +636,27 @@ class _BerandaUIState extends State<BerandaUI>
   }
 }
 
-// ===== DATA MODELS (PERLU BACKEND INTEGRATION) =====
-class WeightEntry {
-  final double weight;
-  final DateTime date;
-  final String? notes;
+class ChartWeight {
+  final DateTime tanggal;
+  final int newWeight;
+  final String kategoriBmi;
 
-  WeightEntry({
-    required this.weight,
-    required this.date,
-    this.notes,
+  ChartWeight({
+    required this.tanggal,
+    required this.newWeight,
+    required this.kategoriBmi,
   });
 
-  // TODO: Implementasi JSON serialization untuk API
-  Map<String, dynamic> toJson() {
-    return {
-      'weight': weight,
-      'date': date.toIso8601String(),
-      'notes': notes,
-    };
-  }
+  factory ChartWeight.fromJson(Map<String, dynamic> json) => ChartWeight(
+        tanggal: DateTime.parse(json["tanggal"]),
+        newWeight: json["new_weight"],
+        kategoriBmi: json["kategori_bmi"],
+      );
 
-  factory WeightEntry.fromJson(Map<String, dynamic> json) {
-    return WeightEntry(
-      weight: json['weight'].toDouble(),
-      date: DateTime.parse(json['date']),
-      notes: json['notes'],
-    );
-  }
+  Map<String, dynamic> toJson() => {
+        "tanggal":
+            "${tanggal.year.toString().padLeft(4, '0')}-${tanggal.month.toString().padLeft(2, '0')}-${tanggal.day.toString().padLeft(2, '0')}",
+        "new_weight": newWeight,
+        "kategori_bmi": kategoriBmi,
+      };
 }
