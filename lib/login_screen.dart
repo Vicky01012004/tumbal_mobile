@@ -83,17 +83,20 @@ class _LoginPageState extends State<LoginPage>
 
     try {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
-      
+
       // Gunakan format JSON seperti yang diminta
       final response = await http.post(
         Uri.parse("$baseUrl/login"),
-        headers: {"Content-Type": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: jsonEncode({"email": email, "password": password}),
       );
-
+      print(response.body);
       if (response.statusCode == 200) {
         var resBody = jsonDecode(response.body);
-        
+
         // Simpan data ke SharedPreferences
         await prefs.setString("token", resBody['access_token'] ?? '');
         await prefs.setString("nama", resBody['user']['Nama'] ?? '');
@@ -110,12 +113,11 @@ class _LoginPageState extends State<LoginPage>
 
         // Redirect ke halaman beranda
         Get.offAll(() => BerandaPage());
-
       } else {
         // Handle error response
         var errorBody = jsonDecode(response.body);
         String errorMessage = errorBody['message'] ?? 'Login gagal';
-        
+
         Get.showSnackbar(GetSnackBar(
           duration: const Duration(seconds: 3),
           title: "Error",
@@ -123,7 +125,6 @@ class _LoginPageState extends State<LoginPage>
           backgroundColor: Colors.red,
         ));
       }
-      
     } catch (e) {
       // Handle network atau parsing error
       Get.showSnackbar(GetSnackBar(
@@ -452,17 +453,19 @@ class _LoginPageState extends State<LoginPage>
                                 const SizedBox(height: 10),
 
                                 // Login button dengan loading state
-                                _isLoading 
-                                  ? const CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                                    )
-                                  : CustomButton(
-                                      text: "Masuk",
-                                      icon: Icons.login_rounded,
-                                      onPressed: _validateAndSubmit,
-                                      backgroundColor: primaryColor,
-                                      height: 56,
-                                    ),
+                                _isLoading
+                                    ? const CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                primaryColor),
+                                      )
+                                    : CustomButton(
+                                        text: "Masuk",
+                                        icon: Icons.login_rounded,
+                                        onPressed: _validateAndSubmit,
+                                        backgroundColor: primaryColor,
+                                        height: 56,
+                                      ),
 
                                 const SizedBox(height: 20),
 
@@ -488,15 +491,13 @@ class _LoginPageState extends State<LoginPage>
                                       style: TextButton.styleFrom(
                                         foregroundColor: primaryColor,
                                       ),
-                                      child: const Text.rich(
-                                        TextSpan(
-                                          text: "Daftar sekarang",
-                                          style: TextStyle(
-                                            color: primaryColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        )
-                                      ),
+                                      child: const Text.rich(TextSpan(
+                                        text: "Daftar sekarang",
+                                        style: TextStyle(
+                                          color: primaryColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )),
                                     ),
                                   ],
                                 ),

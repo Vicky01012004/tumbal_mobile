@@ -1,9 +1,20 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:get/get.dart';
+import 'package:get/get_navigation/src/snackbar/snackbar.dart';
+import 'package:get/instance_manager.dart';
+import 'package:intl/intl.dart';
+import 'package:obecity_projectsem4/page/beranda_ui.dart';
+import 'package:obecity_projectsem4/utils/request-url.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import 'kalkulator.dart';
 
 class StatistikPage extends StatefulWidget {
+  const StatistikPage({super.key});
+
   @override
   _StatistikPageState createState() => _StatistikPageState();
 }
@@ -11,30 +22,7 @@ class StatistikPage extends StatefulWidget {
 class _StatistikPageState extends State<StatistikPage>
     with SingleTickerProviderStateMixin {
   // Sample data - in a real app, this would come from a database or state management
-  List<double> weightHistory = [70, 68, 69, 67, 65, 64, 63, 65, 64];
-  List<String> dateHistory = [
-    '1 Apr',
-    '8 Apr',
-    '15 Apr',
-    '22 Apr',
-    '1 May',
-    '8 May',
-    '15 May',
-    '22 May',
-    '1 Jun'
-  ];
-  List<String> bmiCategories = [
-    'Overweight',
-    'Overweight',
-    'Overweight',
-    'Normal',
-    'Normal',
-    'Normal',
-    'Normal',
-    'Normal',
-    'Normal'
-  ];
-
+  List<ChartWeight> weightHistory = [];
   // Animation controller
   late AnimationController _animationController;
   late Animation<double> _fadeInAnimation;
@@ -53,9 +41,10 @@ class _StatistikPageState extends State<StatistikPage>
   void initState() {
     super.initState();
 
+    _loadHistoryData();
     // Initialize animations
     _animationController = AnimationController(
-      vsync: this, 
+      vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
 
@@ -97,14 +86,38 @@ class _StatistikPageState extends State<StatistikPage>
     }
   }
 
+  Future<void> _loadHistoryData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var token = prefs.getString("token");
+    var url = Uri.parse("$baseUrl/auth/history");
+    var response = await http.get(url, headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer $token"
+    });
+    print(token);
+    if (response.statusCode == 200) {
+      List body = json.decode(response.body)['data'];
+      setState(() {
+        weightHistory = body.map((val) => ChartWeight.fromJson(val)).toList();
+      });
+    } else {
+      Get.showSnackbar(const GetSnackBar(
+        duration: Duration(seconds: 3),
+        title: "Error",
+        message: "Oopppss ada kesalahan.. ",
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Calculate stats
-    double initialWeight = weightHistory.first;
-    double currentWeight = weightHistory.last;
-    double totalChange = currentWeight - initialWeight;
-    double weeklyAverage =
-        totalChange / (weightHistory.length > 1 ? weightHistory.length - 1 : 1);
+    // double initialWeight = weightHistory.first;
+    // double currentWeight = weightHistory.last;
+    // double totalChange = currentWeight - initialWeight;
+    // double weeklyAverage =
+    //     totalChange / (weightHistory.length > 1 ? weightHistory.length - 1 : 1);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -182,221 +195,64 @@ class _StatistikPageState extends State<StatistikPage>
                       const SizedBox(height: 20),
 
                       // Summary Grid
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoCard(
-                              Icons.hourglass_empty,
-                              "Berat Awal",
-                              "${initialWeight.toStringAsFixed(1)} kg",
-                              Colors.blue.shade100,
-                              Colors.blue,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildInfoCard(
-                              Icons.scale,
-                              "Berat Saat Ini",
-                              "${currentWeight.toStringAsFixed(1)} kg",
-                              Colors.green.shade100,
-                              primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoCard(
-                              Icons.trending_up,
-                              "Total Perubahan",
-                              "${totalChange.toStringAsFixed(1)} kg",
-                              totalChange >= 0
-                                  ? Colors.orange.shade100
-                                  : Colors.lightBlue.shade100,
-                              totalChange >= 0
-                                  ? Colors.orange
-                                  : Colors.lightBlue,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildInfoCard(
-                              Icons.calendar_month,
-                              "Rata-rata/Minggu",
-                              "${weeklyAverage.toStringAsFixed(1)} kg",
-                              weeklyAverage >= 0
-                                  ? Colors.purple.shade100
-                                  : Colors.teal.shade100,
-                              weeklyAverage >= 0 ? Colors.purple : Colors.teal,
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Row(
+                      //   children: [
+                      //     Expanded(
+                      //       child: _buildInfoCard(
+                      //         Icons.hourglass_empty,
+                      //         "Berat Awal",
+                      //         "${initialWeight.toStringAsFixed(1)} kg",
+                      //         Colors.blue.shade100,
+                      //         Colors.blue,
+                      //       ),
+                      //     ),
+                      //     const SizedBox(width: 10),
+                      //     Expanded(
+                      //       child: _buildInfoCard(
+                      //         Icons.scale,
+                      //         "Berat Saat Ini",
+                      //         "${currentWeight.toStringAsFixed(1)} kg",
+                      //         Colors.green.shade100,
+                      //         primaryColor,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      // const SizedBox(height: 10),
+                      // Row(
+                      //   children: [
+                      //     Expanded(
+                      //       child: _buildInfoCard(
+                      //         Icons.trending_up,
+                      //         "Total Perubahan",
+                      //         "${totalChange.toStringAsFixed(1)} kg",
+                      //         totalChange >= 0
+                      //             ? Colors.orange.shade100
+                      //             : Colors.lightBlue.shade100,
+                      //         totalChange >= 0
+                      //             ? Colors.orange
+                      //             : Colors.lightBlue,
+                      //       ),
+                      //     ),
+                      //     const SizedBox(width: 10),
+                      //     Expanded(
+                      //       child: _buildInfoCard(
+                      //         Icons.calendar_month,
+                      //         "Rata-rata/Minggu",
+                      //         "${weeklyAverage.toStringAsFixed(1)} kg",
+                      //         weeklyAverage >= 0
+                      //             ? Colors.purple.shade100
+                      //             : Colors.teal.shade100,
+                      //         weeklyAverage >= 0 ? Colors.purple : Colors.teal,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 20),
-
-                // // Chart Card
-                // _buildGlassCard(
-                //   child: Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       Row(
-                //         mainAxisAlignment: MainAxisAlignment.center,
-                //         children: [
-                //           const Icon(
-                //             Icons.show_chart,
-                //             color: primaryColor,
-                //             size: 24,
-                //           ),
-                //           const SizedBox(width: 10),
-                //           Text(
-                //             "Grafik Perkembangan",
-                //             style: TextStyle(
-                //               fontSize: 18,
-                //               fontWeight: FontWeight.bold,
-                //               color: primaryColor,
-                //               shadows: [
-                //                 Shadow(
-                //                   color: Colors.black.withOpacity(0.1),
-                //                   offset: const Offset(0, 1),
-                //                   blurRadius: 2,
-                //                 ),
-                //               ],
-                //             ),
-                //           ),
-                //         ],
-                //       ),
-                //       const SizedBox(height: 16),
-                //       SizedBox(
-                //         height: 200,
-                //         child: LineChart(
-                //           LineChartData(
-                //             gridData: FlGridData(
-                //               show: true,
-                //               getDrawingHorizontalLine: (value) {
-                //                 return FlLine(
-                //                   color: Colors.grey.withOpacity(0.3),
-                //                   strokeWidth: 1,
-                //                 );
-                //               },
-                //               getDrawingVerticalLine: (value) {
-                //                 return FlLine(
-                //                   color: Colors.grey.withOpacity(0.3),
-                //                   strokeWidth: 1,
-                //                 );
-                //               },
-                //             ),
-                //             titlesData: FlTitlesData(
-                //               show: true,
-                //               bottomTitles: AxisTitles(
-                //                 sideTitles: SideTitles(
-                //                   showTitles: true,
-                //                   reservedSize: 22,
-                //                   getTitlesWidget: (value, meta) {
-                //                     if (value.toInt() % 2 == 0 &&
-                //                         value.toInt() >= 0 &&
-                //                         value.toInt() < dateHistory.length) {
-                //                       return Padding(
-                //                         padding: const EdgeInsets.only(top: 5),
-                //                         child: Text(
-                //                           dateHistory[value.toInt()],
-                //                           style: const TextStyle(
-                //                             color: Color(0xFF2E7D32),
-                //                             fontWeight: FontWeight.bold,
-                //                             fontSize: 10,
-                //                           ),
-                //                         ),
-                //                       );
-                //                     }
-                //                     return const SizedBox.shrink();
-                //                   },
-                //                 ),
-                //               ),
-                //               leftTitles: AxisTitles(
-                //                 sideTitles: SideTitles(
-                //                   showTitles: true,
-                //                   reservedSize: 28,
-                //                   getTitlesWidget: (value, meta) {
-                //                     return Text(
-                //                       value.toInt().toString(),
-                //                       style: const TextStyle(
-                //                         color: Color(0xFF2E7D32),
-                //                         fontWeight: FontWeight.bold,
-                //                         fontSize: 12,
-                //                       ),
-                //                     );
-                //                   },
-                //                 ),
-                //               ),
-                //               topTitles: AxisTitles(
-                //                 sideTitles: SideTitles(showTitles: false),
-                //               ),
-                //               rightTitles: AxisTitles(
-                //                 sideTitles: SideTitles(showTitles: false),
-                //               ),
-                //             ),
-                //             borderData: FlBorderData(
-                //               show: true,
-                //               border: Border.all(
-                //                 color: Colors.grey.withOpacity(0.5),
-                //                 width: 1,
-                //               ),
-                //             ),
-                //             minX: 0,
-                //             maxX: weightHistory.length.toDouble() - 1,
-                //             minY:
-                //                 (weightHistory.reduce(min) - 5).clamp(30, 150),
-                //             maxY:
-                //                 (weightHistory.reduce(max) + 5).clamp(30, 150),
-                //             lineBarsData: [
-                //               LineChartBarData(
-                //                 spots: weightHistory
-                //                     .asMap()
-                //                     .entries
-                //                     .map((e) =>
-                //                         FlSpot(e.key.toDouble(), e.value))
-                //                     .toList(),
-                //                 isCurved: true,
-                //                 color: primaryColor,
-                //                 barWidth: 3,
-                //                 isStrokeCapRound: true,
-                //                 dotData: FlDotData(
-                //                   show: true,
-                //                   getDotPainter:
-                //                       (spot, percent, barData, index) {
-                //                     return FlDotCirclePainter(
-                //                       radius: 4,
-                //                       color: primaryColor,
-                //                       strokeWidth: 2,
-                //                       strokeColor: Colors.white,
-                //                     );
-                //                   },
-                //                 ),
-                //                 belowBarData: BarAreaData(
-                //                   show: true,
-                //                   gradient: LinearGradient(
-                //                     begin: Alignment.topCenter,
-                //                     end: Alignment.bottomCenter,
-                //                     colors: [
-                //                       primaryColor.withOpacity(0.3),
-                //                       primaryColor.withOpacity(0.0),
-                //                     ],
-                //                   ),
-                //                 ),
-                //               )
-                //             ],
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
 
                 const SizedBox(height: 20),
 
@@ -431,6 +287,7 @@ class _StatistikPageState extends State<StatistikPage>
                         ],
                       ),
                       const SizedBox(height: 16),
+
                       // History list with modern design
                       ...List.generate(
                         weightHistory.length,
@@ -441,7 +298,8 @@ class _StatistikPageState extends State<StatistikPage>
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                             side: BorderSide(
-                              color: _getBMICategoryColor(bmiCategories[index])
+                              color: _getBMICategoryColor(
+                                      weightHistory[index].kategoriBmi)
                                   .withOpacity(0.3),
                               width: 1,
                             ),
@@ -456,14 +314,16 @@ class _StatistikPageState extends State<StatistikPage>
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: _getBMICategoryColor(
-                                            bmiCategories[index])
+                                            weightHistory[index]
+                                                .tanggal
+                                                .toString())
                                         .withOpacity(0.2),
                                   ),
                                   child: Center(
                                     child: Icon(
                                       Icons.scale,
                                       color: _getBMICategoryColor(
-                                          bmiCategories[index]),
+                                          weightHistory[index].kategoriBmi),
                                       size: 22,
                                     ),
                                   ),
@@ -475,14 +335,15 @@ class _StatistikPageState extends State<StatistikPage>
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        dateHistory[index],
+                                        DateFormat('dd-MM-yyyy').format(
+                                            weightHistory[index].tanggal),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                         ),
                                       ),
                                       Text(
-                                        "Berat: ${weightHistory[index].toStringAsFixed(1)} kg",
+                                        "Berat: ${weightHistory[index].newWeight.toStringAsFixed(1)} kg",
                                         style: TextStyle(
                                           color: Colors.grey[700],
                                           fontSize: 14,
@@ -498,15 +359,15 @@ class _StatistikPageState extends State<StatistikPage>
                                   ),
                                   decoration: BoxDecoration(
                                     color: _getBMICategoryColor(
-                                            bmiCategories[index])
+                                            weightHistory[index].kategoriBmi)
                                         .withOpacity(0.2),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
-                                    bmiCategories[index],
+                                    weightHistory[index].kategoriBmi,
                                     style: TextStyle(
                                       color: _getBMICategoryColor(
-                                          bmiCategories[index]),
+                                          weightHistory[index].kategoriBmi),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
                                     ),

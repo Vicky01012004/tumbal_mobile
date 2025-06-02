@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:obecity_projectsem4/login_screen.dart';
 import 'package:obecity_projectsem4/utils/request-url.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  runApp(IMTPage());
+  runApp(const IMTPage());
 }
 
 class IMTPage extends StatelessWidget {
+  const IMTPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -17,12 +22,14 @@ class IMTPage extends StatelessWidget {
         primaryColor: const Color(0xFF2E7D32),
         scaffoldBackgroundColor: const Color(0xFFE8F5E9),
       ),
-      home: BMICalculatorPage(),
+      home: const BMICalculatorPage(),
     );
   }
 }
 
 class BMICalculatorPage extends StatefulWidget {
+  const BMICalculatorPage({super.key});
+
   @override
   _BMICalculatorPageState createState() => _BMICalculatorPageState();
 }
@@ -91,6 +98,57 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
     super.dispose();
   }
 
+  void sendKalkulator() async {
+    final response = await http.post(
+      Uri.parse("$baseUrl/auth/history-preds"),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: jsonEncode({
+        "height": heightController.text,
+        "weight": weightController.text,
+        "family_history_with_overweight":
+            familyObesity == "Ya" ? "true" : "false",
+        "favc": instantNoodles == "Ya" ? "true" : "false",
+        "ncp": "false",
+        "caec": "false",
+        "faf": physicalActivity == "Ya" ? "true" : "false",
+        "kategori_bmi": prediction
+      }),
+    );
+    print(response.body);
+    if (response.statusCode == 200) {
+      Get.showSnackbar(const GetSnackBar(
+        duration: Duration(seconds: 3),
+        title: "Success",
+        message: "Data Bulanan telah disimpan",
+        backgroundColor: Colors.green,
+      ));
+    } else {
+      var error = jsonDecode(response.body)['message'];
+      if (error == "Attempt to read property \"id_User\" on null") {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        // Implement logout functionality here
+        // Navigator.of(context).pop();
+        prefs.remove('token');
+        Get.offAll(() => const LoginPage());
+        Get.showSnackbar(const GetSnackBar(
+          duration: Duration(seconds: 3),
+          title: "Error",
+          message: "Token expired",
+          backgroundColor: Colors.red,
+        ));
+      }
+      Get.showSnackbar(const GetSnackBar(
+        duration: Duration(seconds: 3),
+        title: "Error",
+        message: "Data Bulanan telah ada, Data gagal disimpan",
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
+
 // API Function - VERSI DIPERBAIKI
   Future<void> kirimKeAPI() async {
     final height = double.tryParse(heightController.text);
@@ -138,8 +196,8 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
     };
 
     try {
-      print(' Mengirim request ke: $url');
-      print(' Data yang dikirim: $data');
+      print('🚀 Mengirim request ke: $url');
+      print('📊 Data yang dikirim: $data');
 
       final response = await http
           .post(
@@ -150,10 +208,10 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
             },
             body: jsonEncode(data),
           )
-          .timeout(Duration(seconds: 15));
+          .timeout(const Duration(seconds: 15));
 
-      print(' Response status: ${response.statusCode}');
-      print(' Response body: ${response.body}');
+      print('📱 Response status: ${response.statusCode}');
+      print('📄 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
@@ -164,6 +222,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
               'BMI: ${result['bmi']} - ${result['risk'] ?? 'Unknown'}';
           isLoading = false;
         });
+        sendKalkulator();
       } else {
         setState(() {
           prediction =
@@ -176,7 +235,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
         prediction = 'Gagal terhubung ke server: $e';
         isLoading = false;
       });
-      print(' Error detail: $e');
+      print('❌ Error detail: $e');
     }
   }
 
@@ -271,7 +330,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
+                        const Text(
                           'Masukkan Data Anda',
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -488,7 +547,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: primaryColor, width: 2),
+            borderSide: const BorderSide(color: primaryColor, width: 2),
           ),
         ),
       ),
@@ -514,7 +573,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: primaryColor, width: 2),
+            borderSide: const BorderSide(color: primaryColor, width: 2),
           ),
         ),
         items: items
@@ -550,7 +609,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(
+          title: const Text(
             'Hasil BMI',
             style: TextStyle(color: primaryColor),
           ),
@@ -565,7 +624,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(
+              child: const Text(
                 'Tutup',
                 style: TextStyle(color: primaryColor),
               ),
@@ -575,7 +634,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Masukkan tinggi dan berat badan yang valid'),
           backgroundColor: primaryColor,
         ),

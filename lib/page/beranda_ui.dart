@@ -23,11 +23,12 @@ class BerandaUI extends StatefulWidget {
 class _BerandaUIState extends State<BerandaUI>
     with SingleTickerProviderStateMixin {
   // ===== DATA VARIABLES (PERLU BACKEND INTEGRATION) =====
-  double currentWeight = 60;
-  double currentHeight = 170;
+  double currentWeight = 0;
+  double currentHeight = 0;
   List<ChartWeight> weightHistory = [];
   String bmiCategory = "Normal";
   String inputDate = "";
+  double lastWeight = 0;
 
   // Animation controllers
   late AnimationController _animationController;
@@ -45,6 +46,7 @@ class _BerandaUIState extends State<BerandaUI>
   void initState() {
     super.initState();
     _initializeAnimations();
+    loadHealthStatus();
     _loadUserData(); // PERLU IMPLEMENTASI BACKEND
   }
 
@@ -73,6 +75,26 @@ class _BerandaUIState extends State<BerandaUI>
 
   // ===== BACKEND INTEGRATION METHODS =====
 
+  void loadHealthStatus() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var token = prefs.getString("token");
+    var url = Uri.parse("$baseUrl/auth/health-status");
+    var response = await http.get(url, headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer $token"
+    });
+    
+    if (response.statusCode == 200) {
+      var body = await json.decode(response.body)['data'];
+      setState(() {
+        bmiCategory = body['status_kesehatan'];
+        inputDate = body['tanggal_input'];
+        currentWeight = double.parse(body['berat_badan_terbaru'].toString());
+        currentHeight = double.parse(body['tinggi_badan'].toString());
+      });
+    } else {}
+  }
+
   Future<void> _loadUserData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var token = prefs.getString("token");
@@ -82,7 +104,6 @@ class _BerandaUIState extends State<BerandaUI>
       "Authorization": "Bearer $token"
     });
     print(token);
-    print(response.body);
     if (response.statusCode == 200) {
       List body = json.decode(response.body)['data'];
       setState(() {
@@ -215,50 +236,50 @@ class _BerandaUIState extends State<BerandaUI>
                       ),
                     ),
 
-                    // Weight Input Card
-                    _buildGlassCard(
-                      child: Column(
-                        children: [
-                          _buildCardHeader(
-                            icon: Icons.scale,
-                            title: 'Input Berat Badan Saat Ini',
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            '${currentWeight.toStringAsFixed(1)} kg',
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: primaryColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Slider(
-                            value: currentWeight,
-                            min: 30,
-                            max: 150,
-                            divisions: 240,
-                            label: currentWeight.toStringAsFixed(1),
-                            activeColor: primaryColor,
-                            inactiveColor: secondaryColor.withOpacity(0.5),
-                            onChanged: (value) {
-                              setState(() {
-                                currentWeight = value;
-                                _calculateBMI();
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          CustomButton(
-                            text: "Simpan",
-                            icon: Icons.save,
-                            onPressed: _saveWeightData,
-                            backgroundColor: primaryColor,
-                            height: 50,
-                          ),
-                        ],
-                      ),
-                    ),
+                    // // Weight Input Card
+                    // _buildGlassCard(
+                    //   child: Column(
+                    //     children: [
+                    //       _buildCardHeader(
+                    //         icon: Icons.scale,
+                    //         title: 'Input Berat Badan Saat Ini',
+                    //       ),
+                    //       const SizedBox(height: 16),
+                    //       Text(
+                    //         '${currentWeight.toStringAsFixed(1)} kg',
+                    //         style: const TextStyle(
+                    //           fontSize: 32,
+                    //           fontWeight: FontWeight.bold,
+                    //           color: primaryColor,
+                    //         ),
+                    //       ),
+                    //       const SizedBox(height: 8),
+                    //       // Slider(
+                    //       //   value: currentWeight,
+                    //       //   min: 30,
+                    //       //   max: 150,
+                    //       //   divisions: 240,
+                    //       //   label: currentWeight.toStringAsFixed(1),
+                    //       //   activeColor: primaryColor,
+                    //       //   inactiveColor: secondaryColor.withOpacity(0.5),
+                    //       //   onChanged: (value) {
+                    //       //     setState(() {
+                    //       //       currentWeight = value;
+                    //       //       _calculateBMI();
+                    //       //     });
+                    //       //   },
+                    //       // ),
+                    //       const SizedBox(height: 16),
+                    //       CustomButton(
+                    //         text: "Simpan",
+                    //         icon: Icons.save,
+                    //         onPressed: _saveWeightData,
+                    //         backgroundColor: primaryColor,
+                    //         height: 50,
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
 
                     const SizedBox(height: 20),
 
@@ -270,7 +291,7 @@ class _BerandaUIState extends State<BerandaUI>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.show_chart,
                                 color: primaryColor,
                                 size: 24,
@@ -329,14 +350,12 @@ class _BerandaUIState extends State<BerandaUI>
                           _buildStatusRow(
                             icon: Icons.scale,
                             label: "Berat Badan Saat Ini",
-                            value: "${currentWeight.toStringAsFixed(1)} kg",
+                            value: "${currentWeight.round()} kg",
                           ),
                           _buildStatusRow(
                             icon: Icons.history,
                             label: "Berat Badan Terakhir",
-                            value: weightHistory.isEmpty
-                                ? "Belum ada data"
-                                : "xx kg",
+                            value: "${currentWeight.round()} kg",
                           ),
                           const SizedBox(height: 12),
                           _buildTipCard(),
@@ -544,10 +563,10 @@ class _BerandaUIState extends State<BerandaUI>
               },
             ),
           ),
-          topTitles: AxisTitles(
+          topTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
-          rightTitles: AxisTitles(
+          rightTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
         ),
