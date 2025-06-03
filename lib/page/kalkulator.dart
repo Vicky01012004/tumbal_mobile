@@ -121,6 +121,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
         "kategori_bmi": risk
       }),
     );
+    print(response.body);
     if (response.statusCode == 200) {
       Get.showSnackbar(const GetSnackBar(
         duration: Duration(seconds: 3),
@@ -372,7 +373,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
                           (val) => setState(() => physicalActivity = val!),
                         ),
                         _buildDropdown(
-                          'Apakah Sering Nyeri?',
+                          'Apakah sering nyemil di waktu malam?',
                           ['Ya', 'Tidak'],
                           painComplaint,
                           (val) => setState(() => painComplaint = val!),
