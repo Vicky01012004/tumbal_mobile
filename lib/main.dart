@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:obecity_projectsem4/login_screen.dart';
 import 'package:obecity_projectsem4/page/Rekomendasipage.dart';
 import 'splash_screen.dart';
@@ -10,7 +11,8 @@ import 'beranda.dart';
 import 'page/setting.dart';
 
 void main() {
-  runApp(const MyApp());
+  initializeDateFormatting('id_ID', null).then((_) => runApp(const MyApp()));
+  // runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -24,7 +26,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: LoginPage(),
+      locale: const Locale("id", "ID"),
+      home: const LoginPage(),
       //   getPages: [
       //     GetPage(
       //         name: '/kalkulator',

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:obecity_projectsem4/login_screen.dart';
 import 'dart:math';
-
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart'; // Tambahkan package ini untuk format tanggal
 
 class PengaturanPage extends StatefulWidget {
   const PengaturanPage({super.key});
@@ -17,7 +17,13 @@ class _PengaturanPageState extends State<PengaturanPage>
   late AnimationController _animationController;
   late Animation<double> _fadeInAnimation;
   late Animation<double> _slideAnimation;
+
+  // Variables untuk menyimpan data user
   String nama = '';
+  String email = '';
+  String tinggiBadan = '';
+  String jenisKelamin = '';
+  String createdAt = '';
   int currentPageIndex = 4;
 
   // Konstanta warna untuk konsistensi dengan beranda page
@@ -29,8 +35,10 @@ class _PengaturanPageState extends State<PengaturanPage>
 
   @override
   void initState() {
-    getUserLogin();
     super.initState();
+  
+    getUserData(); // Panggil fungsi untuk load data user
+
     // Initialize animations consistent with beranda page
     _animationController = AnimationController(
       vsync: this,
@@ -57,78 +65,111 @@ class _PengaturanPageState extends State<PengaturanPage>
   @override
   void dispose() {
     _animationController.dispose();
-
     super.dispose();
   }
 
-  void getUserLogin() async {
+  // Fungsi untuk mengambil data user dari SharedPreferences
+  void getUserData() async {
+    
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    print(prefs.getString("nama"));
+
     setState(() {
-      nama = prefs.getString("nama")!;
-      // userEmail = prefs.getString("email")!;
+      nama = prefs.getString("nama") ?? 'Tidak ada nama';
+      email = prefs.getString("email") ?? 'Tidak ada email';
+      tinggiBadan = prefs.getString("Tinggi_Badan") ?? '0';
+      jenisKelamin = prefs.getString("Jenis_Kelamin") ?? 'Tidak diketahui';
+      createdAt = prefs.getString("created_at") ?? '';
     });
+
+    // Debug print untuk memastikan data terambil
+    print('=== DEBUG USER DATA ===');
+    print('Nama: $nama');
+    print('Email: $email');
+    print('Tinggi Badan: $tinggiBadan');
+    print('Jenis Kelamin: $jenisKelamin');
+    print('Created At: $createdAt');
   }
 
-  void _showResetConfirmationDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange[700]),
-              SizedBox(width: 10),
-              Text('Atur Ulang Aplikasi'),
-            ],
-          ),
-          content: const Text(
-            'Apakah Anda yakin ingin mengatur ulang aplikasi? Semua data berat badan dan preferensi Anda akan dihapus.',
-            style: TextStyle(fontSize: 16),
-          ),
-          actions: [
-            TextButton(
-              child: const Text(
-                'Batal',
-                style: TextStyle(color: Colors.grey),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Text('Atur Ulang'),
-              onPressed: () {
-                // Implement reset functionality here
-                Navigator.of(context).pop();
-                // Show confirmation snackbar
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Aplikasi telah diatur ulang'),
-                    backgroundColor: primaryColor,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
+  // Fungsi untuk format tanggal yang user-friendly
+  String formatCreatedAt(String dateString) {
+    if (dateString.isEmpty) return 'Tidak diketahui';
+
+    try {
+      DateTime? date = DateTime.tryParse(dateString);
+      return DateFormat('dd MMMM yyyy', 'id_ID').format(date!);
+    } catch (e) {
+      print('Error parsing date: $e');
+      return 'Format tanggal tidak valid';
+    }
   }
+
+  // void _showResetConfirmationDialog() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(20),
+  //         ),
+  //         title: Row(
+  //           children: [
+  //             Icon(Icons.warning_amber_rounded, color: Colors.orange[700]),
+  //             const SizedBox(width: 10),
+  //             const Text('Atur Ulang Aplikasi'),
+  //           ],
+  //         ),
+  //         content: const Text(
+  //           'Apakah Anda yakin ingin mengatur ulang aplikasi? Semua data berat badan dan preferensi Anda akan dihapus.',
+  //           style: TextStyle(fontSize: 16),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             child: const Text(
+  //               'Batal',
+  //               style: TextStyle(color: Colors.grey),
+  //             ),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //           ElevatedButton(
+  //             style: ElevatedButton.styleFrom(
+  //               backgroundColor: primaryColor,
+  //               foregroundColor: Colors.white,
+  //               shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(10),
+  //               ),
+  //             ),
+  //             child: const Text('Atur Ulang'),
+  //             onPressed: () async {
+  //               // Clear all SharedPreferences
+  //               final SharedPreferences prefs =
+  //                   await SharedPreferences.getInstance();
+  //               await prefs.clear();
+
+  //               Navigator.of(context).pop();
+
+  //               // Show confirmation snackbar
+  //               ScaffoldMessenger.of(context).showSnackBar(
+  //                 SnackBar(
+  //                   content: const Text('Aplikasi telah diatur ulang'),
+  //                   backgroundColor: primaryColor,
+  //                   behavior: SnackBarBehavior.floating,
+  //                   shape: RoundedRectangleBorder(
+  //                     borderRadius: BorderRadius.circular(10),
+  //                   ),
+  //                 ),
+  //               );
+
+  //               // Redirect to login
+  //               Get.offAll(() => const LoginPage());
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   void _showLogoutConfirmationDialog() {
     showDialog(
@@ -138,7 +179,7 @@ class _PengaturanPageState extends State<PengaturanPage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: Row(
+          title: const Row(
             children: [
               Icon(Icons.logout, color: Colors.red),
               SizedBox(width: 10),
@@ -171,11 +212,10 @@ class _PengaturanPageState extends State<PengaturanPage>
               onPressed: () async {
                 final SharedPreferences prefs =
                     await SharedPreferences.getInstance();
-                // Implement logout functionality here
-                // Navigator.of(context).pop();
-                prefs.remove('token');
-                Get.offAll(() => LoginPage());
-                // Add navigation to login screen or app exit
+                // Remove token saja, bukan semua data
+                await prefs.remove('token');
+
+                Get.offAll(() => const LoginPage());
               },
             ),
           ],
@@ -251,19 +291,33 @@ class _PengaturanPageState extends State<PengaturanPage>
                   _buildGlassCard(
                     child: Column(
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 50,
                           backgroundColor: primaryColor,
-                          child:
-                              Icon(Icons.person, size: 60, color: Colors.white),
+                          child: Text(
+                            nama.isNotEmpty ? nama[0].toUpperCase() : 'U',
+                            style: const TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           nama,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          email,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -322,21 +376,31 @@ class _PengaturanPageState extends State<PengaturanPage>
                         ),
                         const SizedBox(height: 16),
                         _buildInfoRow(
-                            icon: Icons.cake,
-                            label: "Tanggal Lahir",
-                            value: "30 April 2000"),
+                          icon: Icons.height,
+                          label: "Tinggi Badan",
+                          value: tinggiBadan.isNotEmpty && tinggiBadan != '0'
+                              ? "$tinggiBadan cm"
+                              : "Belum diatur",
+                          valueColor:
+                              tinggiBadan.isNotEmpty && tinggiBadan != '0'
+                                  ? Colors.black87
+                                  : Colors.orange,
+                        ),
                         _buildInfoRow(
-                            icon: Icons.height,
-                            label: "Tinggi Badan",
-                            value: "175 cm"),
+                          icon: Icons.calendar_today,
+                          label: "Terdaftar Sejak",
+                          value: formatCreatedAt(createdAt),
+                        ),
                         _buildInfoRow(
-                            icon: Icons.calendar_today,
-                            label: "Dibuat Sejak",
-                            value: "17 Agustus 1945"),
-                        _buildInfoRow(
-                            icon: Icons.person_2,
-                            label: "Jenis Kelamin",
-                            value: "Pria"),
+                          icon: Icons.person_2,
+                          label: "Jenis Kelamin",
+                          value: jenisKelamin.isNotEmpty
+                              ? jenisKelamin
+                              : "Belum diatur",
+                          valueColor: jenisKelamin.isNotEmpty
+                              ? Colors.black87
+                              : Colors.orange,
+                        ),
                       ],
                     ),
                   ),
@@ -375,39 +439,39 @@ class _PengaturanPageState extends State<PengaturanPage>
                         ),
                         const SizedBox(height: 16),
                         // Reset Button
-                        GestureDetector(
-                          onTap: _showResetConfirmationDialog,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.restore,
-                                        color: Colors.orange[700]),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      'Atur Ulang Aplikasi',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.orange[800],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Icon(Icons.arrow_forward_ios,
-                                    size: 16, color: Colors.orange[700]),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
+                        // GestureDetector(
+                        //   // onTap: _showResetConfirmationDialog,
+                        //   child: Container(
+                        //     padding: const EdgeInsets.symmetric(
+                        //         vertical: 12, horizontal: 16),
+                            // decoration: BoxDecoration(
+                            //   color: Colors.orange.withOpacity(0.1),
+                            //   borderRadius: BorderRadius.circular(12),
+                            // ),
+                            // child: Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            //   children: [
+                            //     Row(
+                            //       children: [
+                            //         Icon(Icons.restore,
+                            //             color: Colors.orange[700]),
+                            //         const SizedBox(width: 10),
+                            //         // Text(
+                            //         //   'Atur Ulang Aplikasi',
+                            //         //   style: TextStyle(
+                            //         //     fontWeight: FontWeight.w500,
+                            //         //     color: Colors.orange[800],
+                            //         //   ),
+                            //         // ),
+                            //       ],
+                            //     ),
+                            //     Icon(Icons.arrow_forward_ios,
+                            //         size: 16, color: Colors.orange[700]),
+                            //   ],
+                            // ),
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 12),
                         // Logout Button
                         GestureDetector(
                           onTap: _showLogoutConfirmationDialog,
@@ -418,14 +482,14 @@ class _PengaturanPageState extends State<PengaturanPage>
                               color: Colors.red.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.logout, color: Colors.red),
-                                    const SizedBox(width: 10),
-                                    const Text(
+                                    Icon(Icons.logout, color: Colors.red),
+                                    SizedBox(width: 10),
+                                    Text(
                                       'Keluar',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
@@ -434,7 +498,7 @@ class _PengaturanPageState extends State<PengaturanPage>
                                     ),
                                   ],
                                 ),
-                                const Icon(Icons.arrow_forward_ios,
+                                Icon(Icons.arrow_forward_ios,
                                     size: 16, color: Colors.red),
                               ],
                             ),
@@ -525,12 +589,14 @@ class _PengaturanPageState extends State<PengaturanPage>
               fontWeight: FontWeight.w500,
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              color: valueColor ?? Colors.black87,
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                color: valueColor ?? Colors.black87,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PengaturanPage extends StatefulWidget {
+  const PengaturanPage({super.key});
+
   @override
   _PengaturanPageState createState() => _PengaturanPageState();
 }
@@ -45,7 +47,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text('Pengaturan'),
+        title: const Text('Pengaturan'),
         backgroundColor: Colors.teal,
       ),
       body: SingleChildScrollView(
@@ -54,18 +56,18 @@ class _PengaturanPageState extends State<PengaturanPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildProfileSection(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildAppSettingsSection(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildHealthGoalsSection(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildAccountSection(),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 4,
-        items: [
+        items: const [
           BottomNavigationBarItem(
               icon: Icon(Icons.recommend), label: 'Rekomendasi'),
           BottomNavigationBarItem(
@@ -81,7 +83,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
 
   Widget _buildProfileSection() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -96,16 +98,17 @@ class _PengaturanPageState extends State<PengaturanPage> {
                 backgroundColor: Colors.teal,
                 child: Text(
                   userName[0],
-                  style: TextStyle(fontSize: 24, color: Colors.white),
+                  style: const TextStyle(fontSize: 24, color: Colors.white),
                 ),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     userName,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     userEmail,
@@ -113,9 +116,9 @@ class _PengaturanPageState extends State<PengaturanPage> {
                   ),
                 ],
               ),
-              Spacer(),
+              const Spacer(),
               IconButton(
-                icon: Icon(Icons.edit, color: Colors.teal),
+                icon: const Icon(Icons.edit, color: Colors.teal),
                 onPressed: () {
                   // Open profile edit dialog
                   _showEditProfileDialog();
@@ -123,7 +126,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
               ),
             ],
           ),
-          Divider(height: 30),
+          const Divider(height: 30),
           _buildProfileItem("Jenis Kelamin", userGender, Icons.person),
           _buildProfileItem("Tinggi", "$userHeight $heightUnit", Icons.height),
           _buildProfileItem("Tanggal Lahir", birthDate, Icons.calendar_today),
@@ -134,7 +137,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
 
   Widget _buildAppSettingsSection() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -142,11 +145,11 @@ class _PengaturanPageState extends State<PengaturanPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "Pengaturan Aplikasi",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           _buildSwitchSetting(
             "Notifikasi",
             "Terima pengingat dan pemberitahuan",
@@ -204,7 +207,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
 
   Widget _buildHealthGoalsSection() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -212,11 +215,11 @@ class _PengaturanPageState extends State<PengaturanPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "Target Kesehatan",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           _buildEditableSetting(
             "Target Berat Badan",
             "$targetWeight $weightUnit",
@@ -258,7 +261,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
 
   Widget _buildAccountSection() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -266,11 +269,11 @@ class _PengaturanPageState extends State<PengaturanPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "Akun",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           _buildActionButton(
             "Ganti Password",
             "Ubah password akun Anda",
@@ -280,7 +283,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
               // Show change password dialog
             },
           ),
-          Divider(height: 16),
+          const Divider(height: 16),
           _buildActionButton(
             "Ekspor Data",
             "Unduh semua data berat badan Anda",
@@ -290,7 +293,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
               // Show export data dialog
             },
           ),
-          Divider(height: 16),
+          const Divider(height: 16),
           _buildActionButton(
             "Hapus Akun",
             "Hapus akun dan semua data Anda",
@@ -300,8 +303,8 @@ class _PengaturanPageState extends State<PengaturanPage> {
               // Show delete account confirmation
             },
           ),
-          SizedBox(height: 16),
-          Center(
+          const SizedBox(height: 16),
+          const Center(
             child: Text(
               "Versi Aplikasi: 1.0.0",
               style: TextStyle(color: Colors.grey),
@@ -318,7 +321,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
       child: Row(
         children: [
           Icon(icon, color: Colors.grey[600], size: 20),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -328,7 +331,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
               ),
               Text(
                 value,
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
             ],
           ),
@@ -349,7 +352,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 Text(
                   subtitle,
@@ -377,7 +380,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
           Expanded(
             child: Text(
               title,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ),
           DropdownButton<String>(
@@ -407,7 +410,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
           Expanded(
             child: Text(
               title,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ),
           InkWell(
@@ -416,10 +419,10 @@ class _PengaturanPageState extends State<PengaturanPage> {
               children: [
                 Text(
                   value,
-                  style: TextStyle(color: Colors.teal),
+                  style: const TextStyle(color: Colors.teal),
                 ),
-                SizedBox(width: 4),
-                Icon(Icons.edit, size: 16, color: Colors.teal),
+                const SizedBox(width: 4),
+                const Icon(Icons.edit, size: 16, color: Colors.teal),
               ],
             ),
           ),
@@ -437,21 +440,21 @@ class _PengaturanPageState extends State<PengaturanPage> {
         child: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: color, size: 20),
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                   ),
                   Text(
                     subtitle,
@@ -460,7 +463,7 @@ class _PengaturanPageState extends State<PengaturanPage> {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey),
+            const Icon(Icons.chevron_right, color: Colors.grey),
           ],
         ),
       ),

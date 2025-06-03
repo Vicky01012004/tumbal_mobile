@@ -54,6 +54,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
   String painComplaint = 'Tidak';
   String instantNoodles = 'Tidak';
   String prediction = '';
+  String risk = '';
   bool isLoading = false;
 
   int currentPageIndex = 3; // IMT page is the 4th index
@@ -99,11 +100,14 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
   }
 
   void sendKalkulator() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var token = prefs.getString("token");
     final response = await http.post(
       Uri.parse("$baseUrl/auth/history-preds"),
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        "Authorization": "Bearer $token"
       },
       body: jsonEncode({
         "height": heightController.text,
@@ -114,10 +118,9 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
         "ncp": "false",
         "caec": "false",
         "faf": physicalActivity == "Ya" ? "true" : "false",
-        "kategori_bmi": prediction
+        "kategori_bmi": risk
       }),
     );
-    print(response.body);
     if (response.statusCode == 200) {
       Get.showSnackbar(const GetSnackBar(
         duration: Duration(seconds: 3),
@@ -126,20 +129,20 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
         backgroundColor: Colors.green,
       ));
     } else {
-      var error = jsonDecode(response.body)['message'];
-      if (error == "Attempt to read property \"id_User\" on null") {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        // Implement logout functionality here
-        // Navigator.of(context).pop();
-        prefs.remove('token');
-        Get.offAll(() => const LoginPage());
-        Get.showSnackbar(const GetSnackBar(
-          duration: Duration(seconds: 3),
-          title: "Error",
-          message: "Token expired",
-          backgroundColor: Colors.red,
-        ));
-      }
+      // var error = jsonDecode(response.body)['message'];
+      // if (error == "Attempt to read property \"id_User\" on null") {
+      //   final SharedPreferences prefs = await SharedPreferences.getInstance();
+      //   // Implement logout functionality here
+      //   // Navigator.of(context).pop();
+      //   prefs.remove('token');
+      //   Get.offAll(() => const LoginPage());
+      //   Get.showSnackbar(const GetSnackBar(
+      //     duration: Duration(seconds: 3),
+      //     title: "Error",
+      //     message: "Token expired",
+      //     backgroundColor: Colors.red,
+      //   ));
+      // }
       Get.showSnackbar(const GetSnackBar(
         duration: Duration(seconds: 3),
         title: "Error",
@@ -216,6 +219,7 @@ class _BMICalculatorPageState extends State<BMICalculatorPage>
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
         setState(() {
+          risk = result['category'];
           // Sesuaikan dengan response dari Laravel
           prediction = result['prediction'] ??
               result['category'] ??

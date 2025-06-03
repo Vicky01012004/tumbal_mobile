@@ -1,7 +1,15 @@
+import 'dart:convert';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:obecity_projectsem4/utils/request-url.dart';
 import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RekomendasiPage extends StatefulWidget {
+  const RekomendasiPage({super.key});
+
   @override
   _RekomendasiPageState createState() => _RekomendasiPageState();
 }
@@ -13,6 +21,7 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
   double height = 170;
   double bmi = 0;
   String bmiCategory = "";
+  List listRekomendasi = [];
 
   List<Map<String, dynamic>> nutritionRecommendations = [];
   List<Map<String, dynamic>> exerciseRecommendations = [];
@@ -22,6 +31,7 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
     super.initState();
     calculateBMI();
     _generateRecommendations();
+    getRekomendasi();
   }
 
   void calculateBMI() {
@@ -37,6 +47,24 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
     } else {
       bmiCategory = "Obesitas";
     }
+  }
+
+  void getRekomendasi() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var token = prefs.getString("token");
+    final response = await http.get(
+      Uri.parse("$baseUrl/auth/rekomendasi"),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer $token"
+      },
+    );
+    print(response.body);
+    var body = json.decode(response.body);
+    setState(() {
+      listRekomendasi = body['data'];
+    });
   }
 
   void _generateRecommendations() {
@@ -206,7 +234,7 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text('Rekomendasi'),
+        title: const Text('Rekomendasi'),
         backgroundColor: Colors.teal,
       ),
       body: SingleChildScrollView(
@@ -215,7 +243,7 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -223,52 +251,52 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     "Target Berat Badan",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _buildTargetButton("Menurunkan", Colors.blue),
-                      SizedBox(width: 8),
-                      _buildTargetButton("Mempertahankan", Colors.green),
-                      SizedBox(width: 8),
-                      _buildTargetButton("Menaikkan", Colors.orange),
-                    ],
-                  ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                  // Row(
+                  //   children: [
+                  //     _buildTargetButton("Menurunkan", Colors.blue),
+                  //     const SizedBox(width: 8),
+                  //     _buildTargetButton("Mempertahankan", Colors.green),
+                  //     const SizedBox(width: 8),
+                  //     _buildTargetButton("Menaikkan", Colors.orange),
+                  //   ],
+                  // ),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Berat Saat Ini"),
+                          const Text("Berat Saat Ini"),
                           Text(
                             "${currentWeight.toStringAsFixed(1)} kg",
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           ),
                         ],
                       ),
-                      Icon(Icons.arrow_forward, color: Colors.grey),
+                      const Icon(Icons.arrow_forward, color: Colors.grey),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text("Target Berat"),
+                          const Text("Target Berat"),
                           Text(
                             "${targetWeight.toStringAsFixed(1)} kg",
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           ),
                         ],
                       ),
                     ],
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Container(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: _getInfoColor().withOpacity(0.1),
                       border: Border.all(color: _getInfoColor()),
@@ -277,7 +305,7 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
                     child: Row(
                       children: [
                         Icon(Icons.info, color: _getInfoColor()),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(_getInfoText()),
                         ),
@@ -287,36 +315,57 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
                 ],
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
-              "REKOMENDASI NUTRISI",
+              "REKOMENDASI NUTRISI DAN LATIHAN",
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[600],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Column(
-              children: nutritionRecommendations
-                  .map((item) => _buildRecommendationCard(item))
+              children: listRekomendasi
+                  .map(
+                    (item) => Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      elevation: 1,
+                      child: item['saran_makanan'] != null
+                          ? ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.green[100],
+                                child: const Icon(
+                                    CupertinoIcons.leaf_arrow_circlepath,
+                                    color: Colors.green),
+                              ),
+                              title: const Text("Saran Makanan",
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text(item["saran_makanan"]),
+                            )
+                          : ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.green[100],
+                                child: const Icon(
+                                    CupertinoIcons.leaf_arrow_circlepath,
+                                    color: Colors.green),
+                              ),
+                              title: const Text("Saran Latihan",
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text(item["saran_aktivitas"]),
+                            ),
+                    ),
+                  )
                   .toList(),
             ),
-            SizedBox(height: 20),
-            Text(
-              "REKOMENDASI LATIHAN",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
-              ),
-            ),
-            SizedBox(height: 8),
-            Column(
-              children: exerciseRecommendations
-                  .map((item) => _buildRecommendationCard(item))
-                  .toList(),
-            ),
+            // Column(
+            //   children: nutritionRecommendations
+            //       .map((item) => _buildRecommendationCard(item))
+            //       .toList(),
+            // ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -330,7 +379,7 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
         style: ElevatedButton.styleFrom(
           backgroundColor: currentTarget == title ? color : Colors.grey[200],
           foregroundColor: currentTarget == title ? Colors.white : Colors.black,
-          padding: EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 12),
         ),
         child: Text(title),
       ),
@@ -339,15 +388,15 @@ class _RekomendasiPageState extends State<RekomendasiPage> {
 
   Widget _buildRecommendationCard(Map<String, dynamic> item) {
     return Card(
-      margin: EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 8),
       elevation: 1,
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: item["color"].withOpacity(0.2),
           child: Icon(item["icon"], color: item["color"]),
         ),
-        title:
-            Text(item["title"], style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(item["title"],
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(item["description"]),
       ),
     );

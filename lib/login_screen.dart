@@ -102,6 +102,14 @@ class _LoginPageState extends State<LoginPage>
         await prefs.setString("nama", resBody['user']['Nama'] ?? '');
         await prefs.setString("email", resBody['user']['email'] ?? '');
         await prefs.setString("role", resBody['user']['Role'] ?? '');
+        await prefs.setString("Tinggi_Badan", resBody['user']['Tinggi_Badan']?.toString() ?? '');
+        await prefs.setString("Jenis_Kelamin", resBody['user']['Jenis_Kelamin'] ?? '');
+        await prefs.setString("created_at", resBody['user']['created_at'] ?? '');
+
+        // Debug print untuk memastikan data tersimpan
+        print('Tinggi Badan: ${resBody['user']['Tinggi_Badan']}');
+        print('Jenis Kelamin: ${resBody['user']['Jenis_Kelamin']}');
+        print('Created At: ${resBody['user']['created_at']}');
 
         // Tampilkan snackbar sukses
         Get.showSnackbar(const GetSnackBar(

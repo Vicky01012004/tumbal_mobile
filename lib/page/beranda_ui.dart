@@ -83,7 +83,7 @@ class _BerandaUIState extends State<BerandaUI>
       "Accept": "application/json",
       "Authorization": "Bearer $token"
     });
-    
+
     if (response.statusCode == 200) {
       var body = await json.decode(response.body)['data'];
       setState(() {
@@ -298,7 +298,7 @@ class _BerandaUIState extends State<BerandaUI>
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                "Grafik Perkembangan 10 Pemeriksaan Terakhir",
+                                "Grafik Perkembangan 10 Terakhir",
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
